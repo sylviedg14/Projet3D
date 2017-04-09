@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>01.02 - Simple mesh</title>
+    <script src="../libs/three.js"></script>
+    <style>
+        body {
+            /* affichage plein écran */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+	
+<script>
+
+    /* Ajout de trois globales variables et création de trois Application Web .js */
+    var renderer;
+    var scene;
+    var camera;
+
+    /* Initialisation de la scène, de la camera et des objets. */
+    function init() {
+
+        /* Création de la scène qui contiendra tous les objets, cameras et lumières*/
+        scene = new THREE.Scene();
+
+        /* Création de la camera qui définit le point de vue */
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        /* Création du rendu, réglages de la couleur du fond et de sa taille   */
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(0x000000, 1.0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMapEnabled = true;
+
+        /* nouveau : création du sol (ground plane) */
+        var planeGeometry = new THREE.PlaneGeometry(20, 20);
+        var planeMaterial = new THREE.MeshLambertMaterial({color: 0xcccccc});
+        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.receiveShadow = true;
+
+        /* Nouveau Détermination de la position de l'objet sur la scène et sa rotation. La rotation est nécessaire parce que par défaut un objet THREE.PlaneGeometry est orienté verticalement, et comme nous voulons avoir un plan horizontal, il faut que nous le tournions de 90 degrés (soit 0,5 * Pi en radians). Nous devons également définir sa position. Le cube est par défaut à la position 0, 0, 0. La hauteur du cube est de 4, donc si nous compensons la position du sol par 2, le cube sera complètement intégré. */
+        
+        plane.rotation.x = -0.5 * Math.PI;
+        plane.position.x = 0;
+        plane.position.y = -2;
+        plane.position.z = 0;
+
+        /* ajoute les éléments à la scène */
+        scene.add(plane);
+
+        /* Nouveau Création du cube : la première chose à faire est de créer la forme et la géométrie du cube. Nous le faisons en créant un nouvel objet où nous spécifions la largeur, la hauteur et la profondeur du cube. */
+        var cubeGeometry = new THREE.BoxGeometry(6, 4, 6);
+        
+		/*Maintenant que nous avons la forme, nous devons également spécifier un matériau. Ce matériel est utilisé pour déterminer comment un objet réagira aux sources lumineuses de la scène. Par exemple, vous pouvez l'utiliser pour déterminer sa couleur, sa réflectivité, qu'il soit transparent, et bien plus encore. Dans cet exemple, nous créerons un objet TROIS.MeshLambertMaterial et définirons la couleur du cube en rouge. Pour l'instant, il suffit de savoir qu'un matériau nécessite qu'une source lumineuse soit présente dans la scène pour déterminer la couleur qu'il devrait montrer.  */
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red'});
+        
+		/* Il reste à combiner les deux composants; Nous le faisons en créant un objet THREE.Mesh, où nous fournissons la géométrie et le matériau comme arguments. Cet objet THREE.Mesh est ensuite ajouté à la scène */
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+        /* Pour afficher les ombres. */
+        cube.castShadow = true;
+
+        // Nouveau add the cube to the scene
+        scene.add(cube);
+
+        /* Positionner et pointer la caméra vers le centre de la scène */
+        camera.position.x = 15;
+        camera.position.y = 16;
+        camera.position.z = 13;
+        camera.lookAt(scene.position);
+
+        /*nouveau Tout ce qu'il reste à faire est d'ajouter la lumière et de dire à Three.js quelles ombres nous souhaitons. */
+        var spotLight = new THREE.SpotLight(0xffffff);
+        spotLight.position.set(10, 20, 20);
+        spotLight.shadowCameraNear = 20;
+        spotLight.shadowCameraFar = 50;
+        spotLight.castShadow = true;
+
+        scene.add(spotLight);
+
+
+        /* Ajout de la sortie du rendu à l'élément html */
+        document.body.appendChild(renderer.domElement);
+
+        /* Appel de la fonction de rendu, après le premier rendu, l'intervalle est déterminé par demandeAnimationFrame */
+        render();
+    }
+
+    /* Appelé lorsque la scène doit être rendue. Délégué à requestAnimationFrame pour les rendus futurs */
+    function render() {
+        /* Indique au navigateur quand il est préférable d'appeler la fonction fournie requestAnimationFrame. Cela fournit une expérience beaucoup plus fluide et une meilleure performance. */
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+    }
+
+
+    /* Cette fonction gère le redimensionnement. Cela assure que la camera et le processeur sont mis à jour au bon moment. */
+    function handleResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    /* Appel de la fonction d'initialisation lorsque la fenêtre est terminée.*/
+    window.onload = init;
+    /* Appel de la fonction handleResize lorsque la fenêtre est redimensionnée */
+    window.addEventListener('resize', handleResize, false);
+
+</script>
+<body>
+</body>
+</html>
